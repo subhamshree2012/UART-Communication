@@ -1,0 +1,111 @@
+module Seven_segment_LED_Display_Controller(
+    input clock_100Mhz, // 100 Mhz clock source on Basys 3 FPGA
+    input reset, 
+    input [7:0] data,//switch ASCII
+    output reg [3:0] Anode_Activate, // anode signals of the 7-segment LED display
+    output reg [6:0] LED_out// cathode patterns of the 7-segment LED display
+    );
+   
+    reg [7:0] LED_BCD;
+    reg [19:0] refresh_counter; // 20-bit for creating 10.5ms refresh period or 380Hz refresh rate
+             // the first 2 MSB bits for creating 4 LED-activating signals with 2.6ms digit period
+    wire [1:0] LED_activating_counter; 
+                 // count     0    ->  1  ->  2  ->  3
+              // activates    LED1    LED2   LED3   LED4
+             // and repeat
+    /*always @(posedge clock_100Mhz or posedge reset)
+    begin
+        if(reset==1)
+            one_second_counter <= 0;
+        else begin
+            if(one_second_counter>=99999999) 
+                 one_second_counter <= 0;
+            else
+                one_second_counter <= one_second_counter + 1;
+        end
+    end 
+    assign one_second_enable = (one_second_counter==99999999)?1:0;
+    always @(posedge clock_100Mhz or posedge reset)
+    begin
+        if(reset==1)
+            displayed_number <= 0;
+        else if(one_second_enable==1)
+            displayed_number <= displayed_number + 1;
+    end*/
+    always @(posedge clock_100Mhz or posedge reset)
+    begin 
+        if(reset==1)
+            refresh_counter <= 0;
+        else
+            refresh_counter <= refresh_counter + 1;
+    end 
+    assign LED_activating_counter = refresh_counter[19:18];
+    // anode activating signals for 4 LEDs, digit period of 2.6ms
+    // decoder to generate anode signals 
+    always @(*)
+    begin
+        case(LED_activating_counter)
+        2'b00: begin
+            Anode_Activate = 4'b0111; 
+            // activate LED1 and Deactivate LED2, LED3, LED4
+            LED_BCD <= data;
+            // the first digit of the 16-bit number
+              end
+        2'b01: begin
+            Anode_Activate = 4'b1011; 
+            // activate LED2 and Deactivate LED1, LED3, LED4
+          LED_BCD <= data;
+            // the second digit of the 16-bit number
+              end
+        2'b10: begin
+            Anode_Activate = 4'b1101; 
+            // activate LED3 and Deactivate LED2, LED1, LED4
+           LED_BCD <= data;
+            // the third digit of the 16-bit number
+                end
+        2'b11: begin
+            Anode_Activate = 4'b1110; 
+            // activate LED4 and Deactivate LED2, LED3, LED1
+           LED_BCD <= data;
+            // the fourth digit of the 16-bit number    
+               end
+        endcase
+    end
+    // Cathode patterns of the 7-segment LED display 
+    always @(*)
+    begin
+        case(LED_BCD)
+        8'h41: LED_out = 7'b0001000; // "A"     
+        8'h42: LED_out = 7'b0000000; // "B"
+        8'h43: LED_out = 7'b0110001; // "C"
+        8'h44: LED_out = 7'b0000001; // "D"
+        8'h45: LED_out = 7'b0110000; // "E"
+        8'h46: LED_out = 7'b0111000; // "F"
+        8'h47: LED_out = 7'b0100000; // "G"
+        8'h48: LED_out = 7'b1001000; // "H"
+        8'h49: LED_out = 7'b1001111; // "I"
+        8'h4A: LED_out = 7'b1000011; // "J"
+        //8'h4B: LED_out = 7'b0000001; // "K"
+        8'h4C: LED_out = 7'b1110001; // "L"
+        //8'h4D: LED_out = 7'b0000001; // "M"
+       // 8'h4E: LED_out = 7'b0000001; // "N"
+        8'h4F: LED_out = 7'b0000001; // "O"
+        8'h50: LED_out = 7'b0011000; // "P"
+       // 8'h51: LED_out = 7'b0000001; // "Q"
+       // 8'h52: LED_out = 7'b0000001; // "R"
+        8'h53: LED_out = 7'b0100100; // "S"
+      //  8'h54: LED_out = 7'b0000001; // "T"
+        8'h55: LED_out = 7'b1000001; // "U"
+       // 8'h56: LED_out = 7'b0000001; // "V"
+       // 8'h57: LED_out = 7'b0000001; // "W"
+      //  8'h58: LED_out = 7'b0000001; // "X"
+        8'h59: LED_out = 7'b1001100; // "Y"
+        8'h5A: LED_out = 7'b0010010; // "Z"
+        
+        
+        
+        
+        default: LED_out = 7'b0000001; // "0"
+        endcase
+    end
+ endmodule

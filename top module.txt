@@ -1,0 +1,27 @@
+
+module top(
+input [7:0]sw,
+input btn0,
+input btn1,
+input clk,
+output TxD,
+output TxD_debug,
+output transmit_debug,
+output button_debug, 
+output clk_debug,  
+output [3:0] Anode_Activate1, // anode signals of the 7-segment LED display
+  output [6:0] LED_out1
+); 
+
+wire transmit;
+assign TxD_debug = TxD;
+assign transmit_debug = transmit;
+assign button_debug = btn1;
+assign clk_debug = clk;
+
+
+transmit_debouncing D2 (.clk(clk), .btn1(btn1), .transmit(transmit));
+transmitter T1 (.clk(clk), .reset(btn0),.transmit(transmit),.TxD(TxD),.data(sw));
+Seven_segment_LED_Display_Controller l1(clk,btn0,sw,Anode_Activate1,LED_out1);
+
+endmodule
