@@ -7,7 +7,7 @@ output reg transmit //transmit signal
     
 reg button_ff1 = 0; //button flip-flop for synchronization. Initialize it to 0
 reg button_ff2 = 0; //button flip-flop for synchronization. Initialize it to 0
-reg [30:0]count = 0; //20 bits count for increment & decrement when button is pressed or released. Initialize it to 0 
+reg [30:0]count = 0; //30 bits count for increment & decrement when button is pressed or released. Initialize it to 0 
 
 
 // First use two flip-flops to synchronize the button signal the "clk" clock domain
